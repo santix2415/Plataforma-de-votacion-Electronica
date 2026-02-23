@@ -1,16 +1,15 @@
-
-#  Plataforma de Votación Electrónica
+# 🗳️ Plataforma de Votación Electrónica
 
 Sistema de votación electrónica desarrollado para proyecto universitario.
 
 ---
 
-##  Descripción
+## 📝 Descripción
 Plataforma web que permite autenticación segura de votantes, conteo automatizado de votos, auditoría del proceso y escalabilidad para elecciones nacionales.
 
 ---
 
-##  Tecnologías Específicas
+## 💻 Tecnologías Específicas
 
 ### Lenguajes Principales
 - **Java** - Lógica del servidor (Servlets y JSP)
@@ -32,17 +31,3 @@ Plataforma web que permite autenticación segura de votantes, conteo automatizad
 ### Control de Versiones
 - **Git** - Control local
 - **GitHub** - Repositorio remoto
-
----
-
----
-
-##  Instalación Paso a Paso
-
-###  Instalar programas necesarios
-- XAMPP (incluye MySQL y PHPMyAdmin)
-- Apache Tomcat 9
-- Visual Studio Code
-- Git
-
- 
