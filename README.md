@@ -1,15 +1,15 @@
-# 🗳️ Plataforma de Votación Electrónica
+#  Plataforma de Votación Electrónica
 
 Sistema de votación electrónica desarrollado para proyecto universitario.
 
 ---
 
-## 📝 Descripción
+## Descripción
 Plataforma web que permite autenticación segura de votantes, conteo automatizado de votos, auditoría del proceso y escalabilidad para elecciones nacionales.
 
 ---
 
-## 💻 Tecnologías Específicas
+##  Tecnologías Específicas
 
 ### Lenguajes Principales
 - **Java** - Lógica del servidor (Servlets y JSP)
