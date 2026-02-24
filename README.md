@@ -1,4 +1,5 @@
 #  Plataforma de Votación Electrónica
+-Santiago Ruiz Hernández y Maria Camila Monsalve Bernal
 
 Sistema de votación electrónica para un proyecto de la universidad
 
