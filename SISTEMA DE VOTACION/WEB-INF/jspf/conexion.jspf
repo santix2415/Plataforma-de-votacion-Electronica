@@ -1,0 +1,100 @@
+<%@taglib prefix="sql" uri="http://java.sun.com/jsp/jstl/sql" %>
+<%@page import="java.util.*"%>
+
+<sql:setDataSource var="votacion"
+    driver="com.mysql.jdbc.Driver"
+    url="jdbc:mysql://localhost:3306/votacion"
+    user="root"
+    password="" />
+
+<%-- ================================================== --%>
+<%-- CLASE USUARIO (para manejar datos de usuarios)    --%>
+<%-- ================================================== --%>
+<%!
+    public static class Usuario { 
+        private String cedula;
+        private String nombre;
+        private String password;
+        private String rol;
+        private boolean haVotado;
+        
+        public Usuario(String cedula, String nombre, String password, String rol) {
+            this.cedula = cedula;
+            this.nombre = nombre;
+            this.password = password;
+            this.rol = rol;
+            this.haVotado = false;
+        }
+        
+        public String getCedula() { return cedula; }
+        public String getNombre() { return nombre; }
+        public String getPassword() { return password; }
+        public String getRol() { return rol; }
+        public boolean isHaVotado() { return haVotado; }
+        public void setHaVotado(boolean haVotado) { this.haVotado = haVotado; }
+    }
+    
+    public static class UsuarioManager {
+        private static UsuarioManager instancia;
+        private List<Usuario> usuarios;
+        
+        private UsuarioManager() {
+            usuarios = new ArrayList<>();
+            
+            // Usuarios por defecto
+            usuarios.add(new Usuario("12345", "Administrador", "admin123", "admin"));
+            usuarios.add(new Usuario("67890", "Votante Prueba", "votante123", "votante"));
+        }
+        
+        public static UsuarioManager getInstance() {
+            if(instancia == null) {
+                instancia = new UsuarioManager();
+            }
+            return instancia;
+        }
+        
+        public boolean registrar(String cedula, String nombre, String password) {
+            for(Usuario u : usuarios) {
+                if(u.getCedula().equals(cedula)) {
+                    return false;
+                }
+            }
+            usuarios.add(new Usuario(cedula, nombre, password, "votante"));
+            return true;
+        }
+        
+        public Usuario login(String cedula, String password) {
+            for(Usuario u : usuarios) {
+                if(u.getCedula().equals(cedula) && u.getPassword().equals(password)) {
+                    return u;
+                }
+            }
+            return null;
+        }
+        
+        public void marcarVoto(String cedula) {
+            for(Usuario u : usuarios) {
+                if(u.getCedula().equals(cedula)) {
+                    u.setHaVotado(true);
+                    break;
+                }
+            }
+        }
+        
+        public boolean haVotado(String cedula) {
+            for(Usuario u : usuarios) {
+                if(u.getCedula().equals(cedula)) {
+                    return u.isHaVotado();
+                }
+            }
+            return false;
+        }
+    }
+%>
+
+<%
+    // Inicializar el Singleton en la aplicación
+    if(application.getAttribute("userManager") == null) {
+        application.setAttribute("userManager", UsuarioManager.getInstance());
+    }
+%>

@@ -1,0 +1,135 @@
+<%@page import="java.util.*"%>
+
+<%!
+    // =============================================
+    // PRODUCTO: Interfaz para los exportadores
+    // =============================================
+    public interface Exportador {
+        String exportarResultados(Map<String, Integer> resultados);
+    }
+    
+    // =============================================
+    // PRODUCTOS CONCRETOS
+    // =============================================
+    public class ExportadorHTML implements Exportador {
+        @Override
+        public String exportarResultados(Map<String, Integer> resultados) {
+            StringBuilder html = new StringBuilder();
+            html.append("<div class='resultados'>");
+            html.append("<h3>Resultados Electorales</h3>");
+            html.append("<table class='table'>");
+            html.append("<tr><th>Candidato</th><th>Votos</th></tr>");
+            
+            for(Map.Entry<String, Integer> entry : resultados.entrySet()) {
+                html.append("<tr>");
+                html.append("<td>").append(entry.getKey()).append("</td>");
+                html.append("<td>").append(entry.getValue()).append("</td>");
+                html.append("</tr>");
+            }
+            
+            html.append("</table>");
+            html.append("</div>");
+            return html.toString();
+        }
+    }
+    
+    public class ExportadorTexto implements Exportador {
+        @Override
+        public String exportarResultados(Map<String, Integer> resultados) {
+            StringBuilder texto = new StringBuilder();
+            texto.append("RESULTADOS ELECTORALES\n");
+            texto.append("======================\n\n");
+            
+            for(Map.Entry<String, Integer> entry : resultados.entrySet()) {
+                texto.append(entry.getKey()).append(": ");
+                texto.append(entry.getValue()).append(" votos\n");
+            }
+            
+            return texto.toString();
+        }
+    }
+    
+    public class ExportadorJSON implements Exportador {
+        @Override
+        public String exportarResultados(Map<String, Integer> resultados) {
+            StringBuilder json = new StringBuilder();
+            json.append("{\n");
+            json.append("  \"resultados\": [\n");
+            
+            int count = 0;
+            for(Map.Entry<String, Integer> entry : resultados.entrySet()) {
+                json.append("    {");
+                json.append("\"candidato\": \"").append(entry.getKey()).append("\", ");
+                json.append("\"votos\": ").append(entry.getValue());
+                json.append("}");
+                
+                count++;
+                if(count < resultados.size()) {
+                    json.append(",");
+                }
+                json.append("\n");
+            }
+            
+            json.append("  ]\n");
+            json.append("}");
+            return json.toString();
+        }
+    }
+    
+    // =============================================
+    // CREADOR ABSTRACT0 (Factory Method)
+    // =============================================
+    public abstract class ExportadorService {
+        
+        // Factory Method - las subclases implementan
+        public abstract Exportador crearExportador();
+        
+        // Método de negocio que usa el producto
+        public String exportar(Map<String, Integer> resultados) {
+            Exportador exportador = crearExportador();
+            return exportador.exportarResultados(resultados);
+        }
+    }
+    
+    // =============================================
+    // CREADORES CONCRETOS
+    // =============================================
+    public class ExportadorHTMLService extends ExportadorService {
+        @Override
+        public Exportador crearExportador() {
+            return new ExportadorHTML();
+        }
+    }
+    
+    public class ExportadorTextoService extends ExportadorService {
+        @Override
+        public Exportador crearExportador() {
+            return new ExportadorTexto();
+        }
+    }
+    
+    public class ExportadorJSONService extends ExportadorService {
+        @Override
+        public Exportador crearExportador() {
+            return new ExportadorJSON();
+        }
+    }
+    
+    // =============================================
+    // VARIANTE CON PARÁMETROS (Simple Factory)
+    // =============================================
+    public class ExportadorFactory {
+        
+        public static Exportador crearExportador(String tipo) {
+            if("HTML".equalsIgnoreCase(tipo)) {
+                return new ExportadorHTML();
+            } else if("TEXTO".equalsIgnoreCase(tipo)) {
+                return new ExportadorTexto();
+            } else if("JSON".equalsIgnoreCase(tipo)) {
+                return new ExportadorJSON();
+            } else {
+                return new ExportadorHTML(); // Por defecto
+            }
+        }
+    }
+%>
