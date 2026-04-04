@@ -1,0 +1,161 @@
+<%@page import="java.util.*"%>
+
+<%!
+    // =============================================
+    // SISTEMA DE AUTENTICACIÓN PROPIO (TARGET)
+    // =============================================
+    public interface SistemaVotacionAuth {
+        boolean autenticar(String cedula, String password);
+        String getNombreUsuario(String cedula);
+    }
+    
+    public class SistemaVotacionPropio implements SistemaVotacionAuth {
+        private List<Usuario> usuarios;
+        
+        public SistemaVotacionPropio() {
+            usuarios = new ArrayList<>();
+            usuarios.add(new Usuario("12345", "Administrador", "admin123"));
+            usuarios.add(new Usuario("67890", "Votante Prueba", "votante123"));
+        }
+        
+        @Override
+        public boolean autenticar(String cedula, String password) {
+            for(Usuario u : usuarios) {
+                if(u.getCedula().equals(cedula) && u.getPassword().equals(password)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        @Override
+        public String getNombreUsuario(String cedula) {
+            for(Usuario u : usuarios) {
+                if(u.getCedula().equals(cedula)) {
+                    return u.getNombre();
+                }
+            }
+            return null;
+        }
+        
+        private class Usuario {
+            private String cedula;
+            private String nombre;
+            private String password;
+            
+            public Usuario(String cedula, String nombre, String password) {
+                this.cedula = cedula;
+                this.nombre = nombre;
+                this.password = password;
+            }
+            public String getCedula() { return cedula; }
+            public String getNombre() { return nombre; }
+            public String getPassword() { return password; }
+        }
+    }
+    
+    // =============================================
+    // SISTEMA EXTERNO (Google Auth) - INCOMPATIBLE
+    // =============================================
+    public class GoogleAuth {
+        private Map<String, String> usuariosGoogle;
+        
+        public GoogleAuth() {
+            usuariosGoogle = new HashMap<>();
+            usuariosGoogle.put("user@gmail.com", "pass123");
+            usuariosGoogle.put("votante@gmail.com", "voto2024");
+        }
+        
+        public boolean login(String email, String password) {
+            return usuariosGoogle.containsKey(email) && usuariosGoogle.get(email).equals(password);
+        }
+        
+        public String getUserInfo(String email) {
+            if(email.contains("@")) {
+                return email.split("@")[0];
+            }
+            return email;
+        }
+    }
+    
+    // =============================================
+    // ADAPTER (Traductor entre GoogleAuth y SistemaVotacionAuth)
+    // =============================================
+    public class GoogleAuthAdapter implements SistemaVotacionAuth {
+        private GoogleAuth googleAuth;
+        
+        public GoogleAuthAdapter(GoogleAuth googleAuth) {
+            this.googleAuth = googleAuth;
+        }
+        
+        @Override
+        public boolean autenticar(String cedula, String password) {
+            // Google usa email, no cédula. Convertimos cédula a email de prueba
+            String email = cedula + "@gmail.com";
+            return googleAuth.login(email, password);
+        }
+        
+        @Override
+        public String getNombreUsuario(String cedula) {
+            String email = cedula + "@gmail.com";
+            return googleAuth.getUserInfo(email);
+        }
+    }
+    
+    // =============================================
+    // ADAPTER para otro formato (Facebook Auth)
+    // =============================================
+    public class FacebookAuth {
+        public boolean autenticarFacebook(String token) {
+            return token != null && token.length() > 5;
+        }
+        
+        public String obtenerPerfil(String token) {
+            return "UsuarioFacebook";
+        }
+    }
+    
+    public class FacebookAuthAdapter implements SistemaVotacionAuth {
+        private FacebookAuth facebookAuth;
+        private Map<String, String> tokenMap = new HashMap<>();
+        
+        public FacebookAuthAdapter(FacebookAuth facebookAuth) {
+            this.facebookAuth = facebookAuth;
+            tokenMap.put("12345", "token_valido_123");
+            tokenMap.put("67890", "token_valido_456");
+        }
+        
+        @Override
+        public boolean autenticar(String cedula, String password) {
+            String token = tokenMap.get(cedula);
+            if(token != null && token.equals(password)) {
+                return facebookAuth.autenticarFacebook(token);
+            }
+            return false;
+        }
+        
+        @Override
+        public String getNombreUsuario(String cedula) {
+            String token = tokenMap.get(cedula);
+            if(token != null) {
+                return facebookAuth.obtenerPerfil(token);
+            }
+            return "UsuarioDesconocido";
+        }
+    }
+%>
+
+<%
+    // Inicializar adapters en la aplicación
+    if(application.getAttribute("sistemaAuth") == null) {
+        application.setAttribute("sistemaAuth", new SistemaVotacionPropio());
+    }
+    
+    if(application.getAttribute("googleAuthAdapter") == null) {
+        application.setAttribute("googleAuthAdapter", new GoogleAuthAdapter(new GoogleAuth()));
+    }
+    
+    if(application.getAttribute("facebookAuthAdapter") == null) {
+        application.setAttribute("facebookAuthAdapter", new FacebookAuthAdapter(new FacebookAuth()));
+    }
+%>
