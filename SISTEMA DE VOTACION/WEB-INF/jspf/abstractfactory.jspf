@@ -1,0 +1,62 @@
+<%@page import="java.util.*"%>
+
+<%!
+    
+    public interface Boton { String renderizar(String texto); }
+    public interface Tabla { String renderizar(Map<String, Integer> datos); }
+    public interface Notificacion { String mostrar(String mensaje); }
+    
+   
+    public class BotonWeb implements Boton {
+        public String renderizar(String texto) {
+            return "<button class='web'> " + texto + "</button>";
+        }
+    }
+    public class TablaWeb implements Tabla {
+        public String renderizar(Map<String, Integer> datos) {
+            StringBuilder html = new StringBuilder("<table class='web'><tr><th>Candidato</th><th>Votos</th></tr>");
+            for(Map.Entry<String, Integer> e : datos.entrySet()) {
+                html.append("<tr><td>").append(e.getKey()).append("</td><td>").append(e.getValue()).append("</td></tr>");
+            }
+            return html.append("</table>").toString();
+        }
+    }
+    public class NotificacionWeb implements Notificacion {
+        public String mostrar(String m) { return "<div class='web'> " + m + "</div>"; }
+    }
+    
+   
+    public class BotonMovil implements Boton {
+        public String renderizar(String texto) { return "<div class='movil'> " + texto + "</div>"; }
+    }
+    public class TablaMovil implements Tabla {
+        public String renderizar(Map<String, Integer> datos) {
+            StringBuilder html = new StringBuilder("<div class='movil'>");
+            for(Map.Entry<String, Integer> e : datos.entrySet()) {
+                html.append("<div><b>").append(e.getKey()).append(":</b> ").append(e.getValue()).append("</div>");
+            }
+            return html.append("</div>").toString();
+        }
+    }
+    public class NotificacionMovil implements Notificacion {
+        public String mostrar(String m) { return "<div class='movil'> " + m + "</div>"; }
+    }
+    
+    public interface UIFactory {
+        Boton crearBoton();
+        Tabla crearTabla();
+        Notificacion crearNotificacion();
+    }
+    
+    public class WebFactory implements UIFactory {
+        public Boton crearBoton() { return new BotonWeb(); }
+        public Tabla crearTabla() { return new TablaWeb(); }
+        public Notificacion crearNotificacion() { return new NotificacionWeb(); }
+    }
+    
+    public class MovilFactory implements UIFactory {
+        public Boton crearBoton() { return new BotonMovil(); }
+        public Tabla crearTabla() { return new TablaMovil(); }
+        public Notificacion crearNotificacion() { return new NotificacionMovil(); }
+    }
+%>

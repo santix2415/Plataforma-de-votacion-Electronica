@@ -1,0 +1,162 @@
+<%@page import="java.util.*"%>
+
+<%!
+    // =============================================
+    // IMPLEMENTACIÓN (Formatos de entrega)
+    // =============================================
+    public interface ImplementacionReporte {
+        String entregar(String titulo, String contenido);
+        String getTipo();
+    }
+    
+    public class EntregaPDF implements ImplementacionReporte {
+        @Override
+        public String entregar(String titulo, String contenido) {
+            return "[PDF GENERADO]\nTítulo: " + titulo + "\n" + contenido + "\n--- Fin PDF ---";
+        }
+        
+        @Override
+        public String getTipo() { return "PDF"; }
+    }
+    
+    public class EntregaHTML implements ImplementacionReporte {
+        @Override
+        public String entregar(String titulo, String contenido) {
+            return "<div class='reporte'><h3>" + titulo + "</h3><div>" + contenido + "</div></div>";
+        }
+        
+        @Override
+        public String getTipo() { return "HTML"; }
+    }
+    
+    public class EntregaJSON implements ImplementacionReporte {
+        @Override
+        public String entregar(String titulo, String contenido) {
+            return "{ \"titulo\": \"" + titulo + "\", \"contenido\": \"" + contenido + "\" }";
+        }
+        
+        @Override
+        public String getTipo() { return "JSON"; }
+    }
+    
+    public class EntregaEmail implements ImplementacionReporte {
+        @Override
+        public String entregar(String titulo, String contenido) {
+            return "[EMAIL ENVIADO]\nPara: admin@votacion.com\nAsunto: " + titulo + "\nMensaje: " + contenido;
+        }
+        
+        @Override
+        public String getTipo() { return "EMAIL"; }
+    }
+    
+    // =============================================
+    // ABSTRACCIÓN (Tipos de reporte)
+    // =============================================
+    public abstract class ReporteBridge {
+        protected ImplementacionReporte implementacion;
+        
+        public ReporteBridge(ImplementacionReporte implementacion) {
+            this.implementacion = implementacion;
+        }
+        
+        public abstract String generar();
+        public abstract String getNombre();
+        
+        public String entregar() {
+            return implementacion.entregar(getNombre(), generar());
+        }
+        
+        public void setImplementacion(ImplementacionReporte implementacion) {
+            this.implementacion = implementacion;
+        }
+    }
+    
+    // =============================================
+    // REFINAMIENTOS (Tipos concretos de reporte)
+    // =============================================
+    public class ReporteResultados extends ReporteBridge {
+        private Map<String, Integer> resultados;
+        
+        public ReporteResultados(ImplementacionReporte impl, Map<String, Integer> resultados) {
+            super(impl);
+            this.resultados = resultados;
+        }
+        
+        @Override
+        public String getNombre() { return "Resultados Electorales"; }
+        
+        @Override
+        public String generar() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Resultados de la votación:\n");
+            for(Map.Entry<String, Integer> e : resultados.entrySet()) {
+                sb.append(e.getKey()).append(": ").append(e.getValue()).append(" votos\n");
+            }
+            return sb.toString();
+        }
+    }
+    
+    public class ReporteAuditoria extends ReporteBridge {
+        private List<String> eventos;
+        
+        public ReporteAuditoria(ImplementacionReporte impl, List<String> eventos) {
+            super(impl);
+            this.eventos = eventos;
+        }
+        
+        @Override
+        public String getNombre() { return "Reporte de Auditoría"; }
+        
+        @Override
+        public String generar() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Eventos registrados:\n");
+            for(String e : eventos) {
+                sb.append("- ").append(e).append("\n");
+            }
+            return sb.toString();
+        }
+    }
+    
+    public class ReporteEstadisticas extends ReporteBridge {
+        private int totalVotos;
+        private int totalVotantes;
+        
+        public ReporteEstadisticas(ImplementacionReporte impl, int totalVotos, int totalVotantes) {
+            super(impl);
+            this.totalVotos = totalVotos;
+            this.totalVotantes = totalVotantes;
+        }
+        
+        @Override
+        public String getNombre() { return "Estadísticas de Votación"; }
+        
+        @Override
+        public String generar() {
+            int participacion = (totalVotantes > 0) ? (totalVotos * 100 / totalVotantes) : 0;
+            return "Total votos emitidos: " + totalVotos + 
+                   "\nTotal votantes registrados: " + totalVotantes +
+                   "\nPorcentaje participación: " + participacion + "%";
+        }
+    }
+%>
+
+<%
+    // Inicializar datos de ejemplo en la aplicación
+    if(application.getAttribute("eventosAuditoria") == null) {
+        List<String> eventos = new ArrayList<>();
+        eventos.add("Inicio de sesión admin - 10:00");
+        eventos.add("Voto registrado - 10:05");
+        eventos.add("Cierre de sesión - 10:30");
+        application.setAttribute("eventosAuditoria", eventos);
+    }
+    
+    if(application.getAttribute("resultadosVotacion") == null) {
+        Map<String, Integer> resultados = new LinkedHashMap<>();
+        resultados.put("Candidato A", 450);
+        resultados.put("Candidato B", 300);
+        resultados.put("Candidato C", 200);
+        resultados.put("Voto Blanco", 50);
+        application.setAttribute("resultadosVotacion", resultados);
+    }
+%>
