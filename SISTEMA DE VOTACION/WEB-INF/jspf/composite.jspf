@@ -1,0 +1,187 @@
+<%@page import="java.util.*"%>
+
+<%!
+    // =============================================
+    // COMPONENTE (INTERFAZ COMÚN)
+    // =============================================
+    public interface ComponenteVotacion {
+        String getNombre();
+        int getVotos();
+        void mostrar(String prefijo);
+        String getTipo();
+    }
+    
+    // =============================================
+    // HOJA (Candidato individual)
+    // =============================================
+    public class Candidato implements ComponenteVotacion {
+        private String nombre;
+        private String partido;
+        private int votos;
+        
+        public Candidato(String nombre, String partido, int votos) {
+            this.nombre = nombre;
+            this.partido = partido;
+            this.votos = votos;
+        }
+        
+        public void sumarVotos(int adicionales) {
+            this.votos += adicionales;
+        }
+        
+        @Override
+        public String getNombre() {
+            return nombre + " (" + partido + ")";
+        }
+        
+        @Override
+        public int getVotos() {
+            return votos;
+        }
+        
+        @Override
+        public void mostrar(String prefijo) {
+            out.println(prefijo + " " + getNombre() + " - " + votos + " votos");
+        }
+        
+        @Override
+        public String getTipo() {
+            return "Candidato";
+        }
+    }
+    
+    // =============================================
+    // COMPOSITE (Partido o Coalición)
+    // =============================================
+    public class PartidoComposite implements ComponenteVotacion {
+        private String nombre;
+        private List<ComponenteVotacion> componentes = new ArrayList<>();
+        
+        public PartidoComposite(String nombre) {
+            this.nombre = nombre;
+        }
+        
+        public void agregar(ComponenteVotacion componente) {
+            componentes.add(componente);
+        }
+        
+        public void remover(ComponenteVotacion componente) {
+            componentes.remove(componente);
+        }
+        
+        @Override
+        public String getNombre() {
+            return nombre;
+        }
+        
+        @Override
+        public int getVotos() {
+            int total = 0;
+            for(ComponenteVotacion c : componentes) {
+                total += c.getVotos();
+            }
+            return total;
+        }
+        
+        @Override
+        public void mostrar(String prefijo) {
+            out.println(prefijo + " " + nombre + " (Total: " + getVotos() + " votos)");
+            for(ComponenteVotacion c : componentes) {
+                c.mostrar(prefijo + "   ");
+            }
+        }
+        
+        @Override
+        public String getTipo() {
+            return "Partido";
+        }
+        
+        public List<ComponenteVotacion> getHijos() {
+            return componentes;
+        }
+    }
+    
+    // =============================================
+    // COALICIÓN (Composite que agrupa partidos)
+    // =============================================
+    public class CoalicionComposite implements ComponenteVotacion {
+        private String nombre;
+        private List<ComponenteVotacion> partidos = new ArrayList<>();
+        
+        public CoalicionComposite(String nombre) {
+            this.nombre = nombre;
+        }
+        
+        public void agregarPartido(ComponenteVotacion partido) {
+            partidos.add(partido);
+        }
+        
+        @Override
+        public String getNombre() {
+            return nombre;
+        }
+        
+        @Override
+        public int getVotos() {
+            int total = 0;
+            for(ComponenteVotacion p : partidos) {
+                total += p.getVotos();
+            }
+            return total;
+        }
+        
+        @Override
+        public void mostrar(String prefijo) {
+            out.println(prefijo + " COALICIÓN: " + nombre + " (Total: " + getVotos() + " votos)");
+            for(ComponenteVotacion p : partidos) {
+                p.mostrar(prefijo + "   ");
+            }
+        }
+        
+        @Override
+        public String getTipo() {
+            return "Coalición";
+        }
+    }
+%>
+
+<%
+    // Inicializar estructura de ejemplo en la aplicación
+    if(application.getAttribute("estructuraVotacion") == null) {
+        // Crear candidatos individuales
+        Candidato c1 = new Candidato("Ana López", "Partido A", 450);
+        Candidato c2 = new Candidato("Carlos Ruiz", "Partido A", 300);
+        Candidato c3 = new Candidato("Martha Gómez", "Partido B", 200);
+        Candidato c4 = new Candidato("Luis Pérez", "Partido B", 150);
+        Candidato c5 = new Candidato("Sofía Ramírez", "Partido C", 100);
+        Candidato c6 = new Candidato("Jorge Díaz", "Partido C", 80);
+        
+        // Crear partidos (composites)
+        PartidoComposite partidoA = new PartidoComposite("Partido A");
+        partidoA.agregar(c1);
+        partidoA.agregar(c2);
+        
+        PartidoComposite partidoB = new PartidoComposite("Partido B");
+        partidoB.agregar(c3);
+        partidoB.agregar(c4);
+        
+        PartidoComposite partidoC = new PartidoComposite("Partido C");
+        partidoC.agregar(c5);
+        partidoC.agregar(c6);
+        
+        // Crear coalición (composite de composites)
+        CoalicionComposite alianza = new CoalicionComposite("Alianza por el Cambio");
+        alianza.agregarPartido(partidoA);
+        alianza.agregarPartido(partidoB);
+        
+        // Guardar en contexto
+        Map<String, ComponenteVotacion> estructura = new HashMap<>();
+        estructura.put("partidoA", partidoA);
+        estructura.put("partidoB", partidoB);
+        estructura.put("partidoC", partidoC);
+        estructura.put("coalicion", alianza);
+        estructura.put("candidatos", new PartidoComposite("Candidatos Independientes"));
+        
+        application.setAttribute("estructuraVotacion", estructura);
+    }
+%>
