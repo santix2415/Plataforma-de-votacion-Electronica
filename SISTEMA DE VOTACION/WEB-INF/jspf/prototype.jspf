@@ -1,0 +1,94 @@
+<%@page import="java.util.*"%>
+
+<%!
+    // =============================================
+    // INTERFAZ PROTOTYPE
+    // =============================================
+    public interface Prototype {
+        Prototype clone();
+    }
+    
+    // =============================================
+    // CLASE VOTO CON PROTOTYPE
+    // =============================================
+    public class VotoPrototype implements Prototype {
+        private String cedula;
+        private String candidato;
+        private Date fecha;
+        private String hash;
+        
+        public VotoPrototype(String cedula, String candidato) {
+            this.cedula = cedula;
+            this.candidato = candidato;
+            this.fecha = new Date();
+            generarHash();
+        }
+        
+        // Constructor privado para clonación
+        private VotoPrototype(VotoPrototype original) {
+            this.cedula = original.cedula;
+            this.candidato = original.candidato;
+            this.fecha = original.fecha;
+            this.hash = original.hash;
+        }
+        
+        private void generarHash() {
+            String datos = cedula + candidato + fecha.getTime();
+            this.hash = Integer.toHexString(datos.hashCode());
+        }
+        
+        // Método clone del prototype
+        @Override
+        public VotoPrototype clone() {
+            return new VotoPrototype(this);
+        }
+        
+        // Getters
+        public String getCedula() { return cedula; }
+        public String getCandidato() { return candidato; }
+        public Date getFecha() { return fecha; }
+        public String getHash() { return hash; }
+        
+        public void setCedula(String cedula) { this.cedula = cedula; }
+        public void setCandidato(String candidato) { this.candidato = candidato; }
+        
+        public String resumen() {
+            return cedula + " → " + candidato + " [" + hash + "]";
+        }
+    }
+    
+    // =============================================
+    // REGISTRO DE PROTOTIPOS (opcional)
+    // =============================================
+    public class PrototypeRegistry {
+        private Map<String, VotoPrototype> prototipos = new HashMap<>();
+        
+        public void registrar(String key, VotoPrototype prototype) {
+            prototipos.put(key, prototype);
+        }
+        
+        public VotoPrototype obtener(String key) {
+            VotoPrototype original = prototipos.get(key);
+            if(original != null) {
+                return original.clone();
+            }
+            return null;
+        }
+    }
+%>
+
+<%
+    // Inicializar registro de prototipos en la aplicación
+    if(application.getAttribute("prototypeRegistry") == null) {
+        PrototypeRegistry registry = new PrototypeRegistry();
+        
+        // Crear prototipos base
+        VotoPrototype votoBase = new VotoPrototype("", "");
+        registry.registrar("votoBase", votoBase);
+        
+        VotoPrototype votoAdmin = new VotoPrototype("12345", "Administrador");
+        registry.registrar("votoAdmin", votoAdmin);
+        
+        application.setAttribute("prototypeRegistry", registry);
+    }
+%>
