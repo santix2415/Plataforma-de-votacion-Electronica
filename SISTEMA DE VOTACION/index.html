@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Votación Electrónica - Sistema de Votación</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f0c29;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            min-height: 100vh;
+        }
+
+        /* Decoración de fondo con elementos de votación */
+        body::before {
+            content: "🗳️";
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 200px;
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        body::after {
+            content: "✓";
+            position: fixed;
+            top: 100px;
+            left: -50px;
+            font-size: 300px;
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 0;
+            transform: rotate(-15deg);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Encabezado principal */
+        .hero {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #e0c3ff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
+        }
+
+        .hero .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: #e0c3ff;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .hero p {
+            color: rgba(255,255,255,0.7);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Secciones */
+        .seccion {
+            margin-bottom: 60px;
+        }
+
+        .seccion-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .seccion-header .icon {
+            font-size: 2rem;
+        }
+
+        .seccion-header h2 {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .seccion-header .line {
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, rgba(255,255,255,0.3), transparent);
+        }
+
+        /* Grid de tarjetas */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        /* Tarjetas principales (sistema de votación) */
+        .card-main {
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 24px;
+            padding: 28px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .card-main:hover {
+            transform: translateY(-8px);
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 100%);
+            border-color: rgba(255,255,255,0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .card-main .icon {
+            font-size: 2.5rem;
+            margin-bottom: 16px;
+        }
+
+        .card-main h3 {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .card-main p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .card-main .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 10px 24px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .card-main .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+
+        /* Tarjetas de patrones (más sutiles) */
+        .card-pattern {
+            background: white;
+            border-radius: 20px;
+            padding: 22px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .card-pattern:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .card-pattern .icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .card-pattern h3 {
+            color: #1a1a2e;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .card-pattern p {
+            color: #666;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+
+        .card-pattern .btn-small {
+            display: inline-block;
+            background: #f0f0f0;
+            color: #667eea;
+            padding: 6px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .card-pattern .btn-small:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Separador decorativo */
+        .separador {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 40px 0;
+        }
+
+        .separador .dot {
+            width: 8px;
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+        }
+
+        .separador .line {
+            width: 100px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.5);
+            font-size: 0.8rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            .hero h1 {
+                font-size: 2rem;
+            }
+            .seccion-header h2 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="badge">🗳️ Proyecto de Patrones de Software</div>
+            <h1>Sistema de Votación Electrónica</h1>
+            <p>Demostración interactiva de todos los patrones de diseño implementados en una plataforma de votación moderna y segura</p>
+        </div>
+
+        <!-- Sistema de Votación (Tarjetas destacadas) -->
+        <div class="seccion">
+            <div class="seccion-header">
+                <span class="icon">🗳️</span>
+                <h2>Sistema de Votación</h2>
+                <div class="line"></div>
+            </div>
+            <div class="grid">
+                <div class="card-main">
+                    <div class="icon">🔐</div>
+                    <h3>Iniciar Sesión</h3>
+                    <p>Accede con tu cédula y contraseña para comenzar a votar</p>
+                    <a href="login.jsp" class="btn">Ingresar →</a>
+                </div>
+                <div class="card-main">
+                    <div class="icon">📝</div>
+                    <h3>Registrarse</h3>
+                    <p>Crea una nueva cuenta de votante de forma rápida y sencilla</p>
+                    <a href="registro.jsp" class="btn">Registrarse →</a>
+                </div>
+                <div class="card-main">
+                    <div class="icon">🗳️</div>
+                    <h3>Votar</h3>
+                    <p>Elige a tu candidato favorito y emite tu voto con total seguridad</p>
+                    <a href="votacion.jsp" class="btn">Votar →</a>
+                </div>
+                <div class="card-main">
+                    <div class="icon">📊</div>
+                    <h3>Resultados</h3>
+                    <p>Consulta los resultados electorales en tiempo real</p>
+                    <a href="resultados.jsp" class="btn">Ver resultados →</a>
+                </div>
+                <div class="card-main">
+    <div class="icon">📊</div>
+    <h3>Reportes</h3>
+    <p>Visualiza gráficas, estadísticas y resultados de elecciones</p>
+    <a href="reportes.jsp" class="btn">Ver reportes →</a>
+</div>
+            </div>
+        </div>
+
+        <div class="separador">
+            <div class="line"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="line"></div>
+        </div>
+
+        <!-- Patrones de Comportamiento (más destacados) -->
+        <div class="seccion">
+            <div class="seccion-header">
+                <span class="icon">🧠</span>
+                <h2>Patrones de Comportamiento</h2>
+                <div class="line"></div>
+            </div>
+            <div class="grid">
+                <div class="card-pattern">
+                    <div class="icon">🎯</div>
+                    <h3>Strategy</h3>
+                    <p>Algoritmos intercambiables para calcular el ganador</p>
+                    <a href="test-strategy.jsp" class="btn-small">Ver →</a>
+                </div>
+                <div class="card-pattern">
+                    <div class="icon">📝</div>
+                    <h3>Command</h3>
+                    <p>Acciones encapsuladas como objetos (votar, deshacer)</p>
+                    <a href="test-command.jsp" class="btn-small">Ver →</a>
+                </div>
+                <div class="card-pattern">
+                    <div class="icon">👀</div>
+                    <h3>Observer</h3>
+                    <p>Notificaciones automáticas al emitir un voto</p>
+                    <a href="test-observer.jsp" class="btn-small">Ver →</a>
+                </div>
+                <div class="card-pattern">
+                    <div class="icon">🔄</div>
+                    <h3>State</h3>
+                    <p>Comportamiento según el estado de la votación</p>
+                    <a href="test-state.jsp" class="btn-small">Ver →</a>
+                </div>
+                <div class="card-pattern">
+                    <div class="icon">🔤</div>
+                    <h3>Interpreter</h3>
+                    <p>Interpreta comandos de texto sobre los resultados</p>
+                    <a href="test-interpreter.jsp" class="btn-small">Ver→</a>
+                </div>
+                <div class="card-pattern">
+                    <div class="icon">🔄</div>
+                    <h3>Iterator</h3>
+                    <p>Recorre colecciones sin exponer su estructura interna</p>
+                    <a href="test-iterator.jsp" class="btn-small">Ver→</a>
+                </div>
+                <div class="card-pattern">
+                    <div class="icon">📢</div>
+                    <h3>Mediator</h3>
+                    <p>Centraliza la comunicación entre componentes</p>
+                    <a href="test-mediator.jsp" class="btn-small">Ver→</a>
+                </div>
+                <div class="card-pattern">
+                    <div class="icon">💾</div>
+                    <h3>Memento</h3>
+                    <p>Guarda estados y permite deshacer/rehacer</p>
+                    <a href="test-memento.jsp" class="btn-small">Ver →</a>
+                </div>
+                <div class="card-pattern">
+                    <div class="icon">📋</div>
+                    <h3>Template Method</h3>
+                    <p>Esqueleto de algoritmo con pasos personalizables</p>
+                    <a href="test-templatemethod.jsp" class="btn-small">Ver  →</a>
+                </div>
+                <div class="card-pattern">
+                    <div class="icon">🧳</div>
+                    <h3>Visitor</h3>
+                    <p>Agrega operaciones sin modificar clases existentes</p>
+                    <a href="test-visitor.jsp" class="btn-small">Ver →</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="separador">
+            <div class="line"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="line"></div>
+        </div>
+
+        <!-- Patrones Creacionales -->
+        <div class="seccion">
+            <div class="seccion-header">
+                <span class="icon">🔧</span>
+                <h2>Patrones Creacionales</h2>
+                <div class="line"></div>
+            </div>
+            <div class="grid">
+                <div class="card-pattern"><div class="icon">🔒</div><h3>Singleton</h3><p>Instancia única del gestor de usuarios</p><a href="test-singleton.jsp" class="btn-small">Ver →</a></div>
+                <div class="card-pattern"><div class="icon">🏭</div><h3>Factory Method</h3><p>Exportadores de resultados (HTML, texto, JSON)</p><a href="test-factorymethod.jsp" class="btn-small">Ver →</a></div>
+                <div class="card-pattern"><div class="icon">🏛️</div><h3>Abstract Factory</h3><p>Interfaces web vs móvil</p><a href="test-abstractfactory.jsp" class="btn-small">Ver →</a></div>
+                <div class="card-pattern"><div class="icon">🏗️</div><h3>Builder</h3><p>Construcción paso a paso de votos</p><a href="test-builder.jsp" class="btn-small">Ver →</a></div>
+                <div class="card-pattern"><div class="icon">🧬</div><h3>Prototype</h3><p>Clonación de objetos voto</p><a href="test-prototype.jsp" class="btn-small">Ver →</a></div>
+            </div>
+        </div>
+
+        <!-- Patrones Estructurales -->
+        <div class="seccion">
+            <div class="seccion-header">
+                <span class="icon">⚙️</span>
+                <h2>Patrones Estructurales</h2>
+                <div class="line"></div>
+            </div>
+            <div class="grid">
+                <div class="card-pattern"><div class="icon">🔌</div><h3>Adapter</h3><p>Autenticación con Google</p><a href="test-adapter.jsp" class="btn-small">Ver →</a></div>
+                <div class="card-pattern"><div class="icon">🌳</div><h3>Composite</h3><p>Jerarquía candidatos/partidos/coaliciones</p><a href="test-composite.jsp" class="btn-small">Ver →</a></div>
+                <div class="card-pattern"><div class="icon">🏢</div><h3>Facade</h3><p>Simplifica la interacción del sistema</p><a href="test-facade.jsp" class="btn-small">Ver →</a></div>
+            </div>
+        </div>
+
+        <footer>
+            🗳️ Proyecto de Patrones de Software - Sistema de Votación Electrónica
+        </footer>
+    </div>
+</body>
+</html>

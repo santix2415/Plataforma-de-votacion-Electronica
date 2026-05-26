@@ -1,0 +1,32 @@
+<%@taglib prefix="sql" uri="http://java.sun.com/jsp/jstl/sql" %>
+<%@page import="java.util.*"%>
+
+<sql:setDataSource var="votacion"
+    driver="com.mysql.jdbc.Driver"
+    url="jdbc:mysql://localhost:3306/votacion"
+    user="root"
+    password="" />
+
+<%-- ================================================== --%>
+<%-- CLASE USUARIO (para manejar datos de usuarios)    --%>
+<%-- ================================================== --%>
+<%!
+    private static UsuarioManager instancia;
+    private List<Usuario> usuarios;
+    private UsuarioManager() {
+        usuarios = new ArrayList<>();
+        usuarios.add(new Usuario("12345", "Administrador", "admin123", "admin"));
+        usuarios.add(new Usuario("67890", "Votante Prueba", "votante123", "votante"));
+    }
+    public static UsuarioManager getInstance() {
+        if(instancia == null) {
+            instancia = new UsuarioManager();
+        }
+        return instancia;
+    }
+%>
+<%
+    if(application.getAttribute("userManager") == null) {
+        application.setAttribute("userManager", UsuarioManager.getInstance());
+    }
+%>

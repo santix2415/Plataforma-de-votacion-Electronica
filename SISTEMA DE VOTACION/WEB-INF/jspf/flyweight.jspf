@@ -1,0 +1,115 @@
+<%@page import="java.util.*"%>
+
+<%!
+    // =============================================
+    // FLYWEIGHT: Interfaz del objeto compartido
+    // =============================================
+    public interface CandidatoFlyweight {
+        String getId();
+        String getNombre();
+        String getPartido();
+        void mostrarInfo();
+    }
+    
+    // =============================================
+    // FLYWEIGHT CONCRETO (Objeto que se comparte)
+    // =============================================
+    public class CandidatoCompartido implements CandidatoFlyweight {
+        private String id;
+        private String nombre;
+        private String partido;
+        private String foto;      // Atributo pesado que se comparte
+        private String biografia; // Atributo pesado que se comparte
+        
+        public CandidatoCompartido(String id, String nombre, String partido) {
+            this.id = id;
+            this.nombre = nombre;
+            this.partido = partido;
+            this.foto = "[IMAGEN_BINARIA_" + id + "]";
+            this.biografia = "Biografía de " + nombre;
+            System.out.println("🆕 Creando nuevo candidato compartido: " + nombre);
+        }
+        
+        @Override
+        public String getId() { return id; }
+        
+        @Override
+        public String getNombre() { return nombre; }
+        
+        @Override
+        public String getPartido() { return partido; }
+        
+        @Override
+        public void mostrarInfo() {
+            System.out.println(" " + nombre + " (" + partido + ") - Foto: " + foto);
+        }
+        
+        public String getFoto() { return foto; }
+        public String getBiografia() { return biografia; }
+    }
+    
+    // =============================================
+    // FLYWEIGHT FACTORY (Fábrica que comparte objetos)
+    // =============================================
+    public class CandidatoFactory {
+        private Map<String, CandidatoCompartido> candidatos = new HashMap<>();
+        private static CandidatoFactory instancia = new CandidatoFactory();
+        
+        private CandidatoFactory() {}
+        
+        public static CandidatoFactory getInstance() { return instancia; }
+        
+        public CandidatoCompartido getCandidato(String id, String nombre, String partido) {
+            if(candidatos.containsKey(id)) {
+                System.out.println("♻️ Reutilizando candidato existente: " + nombre);
+                return candidatos.get(id);
+            } else {
+                CandidatoCompartido nuevo = new CandidatoCompartido(id, nombre, partido);
+                candidatos.put(id, nuevo);
+                return nuevo;
+            }
+        }
+        
+        public int getCantidadCandidatos() {
+            return candidatos.size();
+        }
+        
+        public void mostrarTodos() {
+            System.out.println("\n=== CANDIDATOS EN MEMORIA (" + candidatos.size() + ") ===");
+            for(CandidatoCompartido c : candidatos.values()) {
+                c.mostrarInfo();
+            }
+        }
+    }
+    
+    // =============================================
+    // CONTEXTO (Información extrínseca - NO se comparte)
+    // =============================================
+    public class VotoContext {
+        private String idVoto;
+        private String cedulaVotante;
+        private String mesaId;
+        private Date fecha;
+        private CandidatoFlyweight candidato;  // Referencia al objeto compartido
+        
+        public VotoContext(String idVoto, String cedulaVotante, String mesaId, CandidatoFlyweight candidato) {
+            this.idVoto = idVoto;
+            this.cedulaVotante = cedulaVotante;
+            this.mesaId = mesaId;
+            this.fecha = new Date();
+            this.candidato = candidato;
+        }
+        
+        public String getResumen() {
+            return "Voto " + idVoto + " | Mesa: " + mesaId + " | Votante: " + cedulaVotante + 
+                   " | Candidato: " + candidato.getNombre() + " | Fecha: " + fecha;
+        }
+    }
+%>
+
+<%
+    // Inicializar la fábrica en la aplicación
+    if(application.getAttribute("candidatoFactory") == null) {
+        application.setAttribute("candidatoFactory", CandidatoFactory.getInstance());
+    }
+%>
